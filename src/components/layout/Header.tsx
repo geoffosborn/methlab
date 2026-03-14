@@ -7,10 +7,11 @@ import clsx from "clsx";
 
 const NAV_LINKS = [
   { href: "/", label: "Home" },
+  { href: "/dashboard", label: "Dashboard" },
   { href: "/facilities", label: "Facilities" },
+  { href: "/alerts", label: "Alerts" },
   { href: "/leaks", label: "Leaks" },
   { href: "/map", label: "Map" },
-  { href: "/cost-benefit", label: "Cost-Benefit" },
   { href: "/about", label: "About" },
 ];
 
