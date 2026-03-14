@@ -6,9 +6,12 @@ import * as THREE from "three";
 import type { PlumeAnnotated } from "@/lib/api/types";
 import { getPlumeCoordinates } from "@/lib/api/types";
 import { gasToColor } from "@/lib/plume/plume-physics";
+import type { Facility } from "@/lib/api/facility-types";
+import { FACILITY_STATUS_COLORS } from "@/lib/api/facility-types";
 
 interface GlobeViewProps {
   plumes: PlumeAnnotated[];
+  facilities?: Facility[];
   autoRotate?: boolean;
 }
 
@@ -33,9 +36,11 @@ function latLonToXYZ(
  */
 export default function GlobeView({
   plumes,
+  facilities = [],
   autoRotate = true,
 }: GlobeViewProps) {
   const markersRef = useRef<THREE.InstancedMesh>(null);
+  const facilityMarkersRef = useRef<THREE.InstancedMesh>(null);
 
   // Create instanced markers for plume locations
   const { positions, colors, scales } = useMemo(() => {
@@ -76,7 +81,40 @@ export default function GlobeView({
       markersRef.current.instanceColor.needsUpdate = true;
   }, [positions, colors, scales]);
 
-  // Auto-rotation is handled by OrbitControls autoRotate prop
+  // Facility marker data
+  const facilityMarkers = useMemo(() => {
+    const pos: [number, number, number][] = [];
+    const col: [number, number, number][] = [];
+
+    for (const facility of facilities) {
+      pos.push(latLonToXYZ(facility.latitude, facility.longitude, EARTH_RADIUS + 0.5));
+      const statusColor = FACILITY_STATUS_COLORS[facility.status] ?? "#666666";
+      const c = new THREE.Color(statusColor);
+      col.push([c.r, c.g, c.b]);
+    }
+
+    return { positions: pos, colors: col };
+  }, [facilities]);
+
+  // Update facility instanced mesh
+  useEffect(() => {
+    if (!facilityMarkersRef.current || facilityMarkers.positions.length === 0) return;
+    const dummy = new THREE.Object3D();
+    const color = new THREE.Color();
+
+    for (let i = 0; i < facilityMarkers.positions.length; i++) {
+      dummy.position.set(...facilityMarkers.positions[i]);
+      dummy.scale.setScalar(0.6);
+      dummy.lookAt(0, 0, 0);
+      dummy.updateMatrix();
+      facilityMarkersRef.current.setMatrixAt(i, dummy.matrix);
+      color.setRGB(...facilityMarkers.colors[i]);
+      facilityMarkersRef.current.setColorAt(i, color);
+    }
+    facilityMarkersRef.current.instanceMatrix.needsUpdate = true;
+    if (facilityMarkersRef.current.instanceColor)
+      facilityMarkersRef.current.instanceColor.needsUpdate = true;
+  }, [facilityMarkers]);
 
   return (
     <>
@@ -127,6 +165,21 @@ export default function GlobeView({
             <meshStandardMaterial
               emissive="#ff6b35"
               emissiveIntensity={2}
+              toneMapped={false}
+            />
+          </instancedMesh>
+        )}
+
+        {/* Facility markers */}
+        {facilityMarkers.positions.length > 0 && (
+          <instancedMesh
+            ref={facilityMarkersRef}
+            args={[undefined, undefined, facilityMarkers.positions.length]}
+          >
+            <octahedronGeometry args={[1, 0]} />
+            <meshStandardMaterial
+              emissive="#22c55e"
+              emissiveIntensity={1.5}
               toneMapped={false}
             />
           </instancedMesh>
