@@ -1,10 +1,25 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import type { TropomiObservation } from "@/lib/api/tropomi-types";
 import { getIntensityLevel } from "@/lib/api/tropomi-types";
 
 interface TropomiTearSheetProps {
   observation: TropomiObservation;
+}
+
+function usePresignedUrl(s3Key: string | null): string | null {
+  const [url, setUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!s3Key) return;
+    fetch(`/api/storage?key=${encodeURIComponent(s3Key)}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => setUrl(data?.url ?? null))
+      .catch(() => setUrl(null));
+  }, [s3Key]);
+
+  return url;
 }
 
 export default function TropomiTearSheet({
@@ -14,17 +29,22 @@ export default function TropomiTearSheet({
     ? getIntensityLevel(observation.intensity_score)
     : null;
 
+  const imageUrl = usePresignedUrl(observation.viz_s3_key);
+
   return (
     <div className="bg-zinc-900/50 border border-zinc-800 rounded-lg overflow-hidden">
       {/* Tear sheet image */}
       {observation.viz_s3_key ? (
         <div className="aspect-[2/1] bg-zinc-950 flex items-center justify-center">
-          {/* In production, this would be an S3 presigned URL */}
-          <img
-            src={`/api/tropomi/image?key=${encodeURIComponent(observation.viz_s3_key)}`}
-            alt={`TROPOMI wind-rotated CH4 for ${observation.period_start}`}
-            className="w-full h-full object-contain"
-          />
+          {imageUrl ? (
+            <img
+              src={imageUrl}
+              alt={`TROPOMI wind-rotated CH4 for ${observation.period_start}`}
+              className="w-full h-full object-contain"
+            />
+          ) : (
+            <div className="animate-pulse bg-zinc-900 w-full h-full" />
+          )}
         </div>
       ) : (
         <div className="aspect-[2/1] bg-zinc-950 flex items-center justify-center">
