@@ -90,6 +90,15 @@ export default async function FacilityPage({ params }: FacilityPageProps) {
         </div>
       </div>
 
+      {/* NGER Compliance */}
+      {facility.metadata &&
+        typeof facility.metadata === "object" &&
+        "nger_baseline_2024" in facility.metadata && (
+          <NgerComplianceCard
+            metadata={facility.metadata as Record<string, string | number>}
+          />
+        )}
+
       {/* Monitoring sections */}
       <div className="mt-8 space-y-4">
         <h2 className="text-lg font-semibold">Monitoring</h2>
@@ -134,6 +143,105 @@ function DetailRow({
     <div className="flex justify-between">
       <dt className="text-zinc-500 text-sm">{label}</dt>
       <dd className="text-sm font-medium">{value}</dd>
+    </div>
+  );
+}
+
+function NgerComplianceCard({
+  metadata,
+}: {
+  metadata: Record<string, string | number>;
+}) {
+  const baseline = Number(metadata.nger_baseline_2024 ?? 0);
+  const reported = Number(metadata.nger_reported_2024 ?? 0);
+  const emitter = String(metadata.nger_emitter ?? "");
+  const ngerName = String(metadata.nger_name ?? "");
+
+  if (!baseline || !reported) return null;
+
+  const exceedance = reported - baseline;
+  const exceedancePct = ((exceedance / baseline) * 100).toFixed(1);
+  const isOver = exceedance > 0;
+
+  const formatTonnes = (t: number) => {
+    if (t >= 1_000_000) return `${(t / 1_000_000).toFixed(2)}M`;
+    if (t >= 1_000) return `${(t / 1_000).toFixed(0)}k`;
+    return t.toLocaleString();
+  };
+
+  // Bar width as percentage of max(baseline, reported)
+  const maxVal = Math.max(baseline, reported);
+  const baselinePctWidth = (baseline / maxVal) * 100;
+  const reportedPctWidth = (reported / maxVal) * 100;
+
+  return (
+    <div className="mt-6 bg-zinc-900/50 border border-zinc-800 rounded-lg p-5 space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-semibold">NGER Safeguard Compliance</h2>
+        <span
+          className={`px-2.5 py-1 rounded-full text-xs font-bold ${
+            isOver
+              ? "bg-red-500/20 text-red-400"
+              : "bg-green-500/20 text-green-400"
+          }`}
+        >
+          {isOver ? `${exceedancePct}% OVER` : `${Math.abs(Number(exceedancePct))}% UNDER`}
+        </span>
+      </div>
+
+      {ngerName && (
+        <p className="text-xs text-zinc-500">
+          NGER facility: {ngerName}
+          {emitter && ` — ${emitter}`}
+        </p>
+      )}
+
+      <div className="space-y-3">
+        {/* Baseline bar */}
+        <div>
+          <div className="flex justify-between text-xs mb-1">
+            <span className="text-zinc-500">Baseline (2023-24)</span>
+            <span className="text-zinc-300 font-medium">
+              {formatTonnes(baseline)} tCO₂e
+            </span>
+          </div>
+          <div className="h-3 bg-zinc-800 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-zinc-500 rounded-full"
+              style={{ width: `${baselinePctWidth}%` }}
+            />
+          </div>
+        </div>
+
+        {/* Reported bar */}
+        <div>
+          <div className="flex justify-between text-xs mb-1">
+            <span className="text-zinc-500">Reported Emissions</span>
+            <span
+              className={`font-medium ${isOver ? "text-red-400" : "text-green-400"}`}
+            >
+              {formatTonnes(reported)} tCO₂e
+            </span>
+          </div>
+          <div className="h-3 bg-zinc-800 rounded-full overflow-hidden">
+            <div
+              className={`h-full rounded-full ${isOver ? "bg-red-500" : "bg-green-500"}`}
+              style={{ width: `${reportedPctWidth}%` }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {isOver && (
+        <div className="pt-2 border-t border-zinc-800">
+          <p className="text-xs text-red-400/80">
+            Exceeded baseline by{" "}
+            <span className="font-bold">{formatTonnes(exceedance)} tCO₂e</span>.
+            Under the reformed Safeguard Mechanism, this facility must
+            surrender ACCUs or apply for a multi-year monitoring period.
+          </p>
+        </div>
+      )}
     </div>
   );
 }
