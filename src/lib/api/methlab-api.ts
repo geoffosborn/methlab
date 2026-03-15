@@ -10,7 +10,8 @@ const API_BASE =
 async function fetchApi<T>(
   path: string,
   params?: Record<string, string | number | undefined>,
-  revalidate = 60
+  revalidate = 60,
+  retries = 2
 ): Promise<T> {
   const url = new URL(`${API_BASE}${path}`);
   if (params) {
@@ -21,15 +22,27 @@ async function fetchApi<T>(
     }
   }
 
-  const res = await fetch(url.toString(), {
-    next: { revalidate },
-  });
+  let lastError: Error | null = null;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const res = await fetch(url.toString(), {
+        next: { revalidate },
+      });
 
-  if (!res.ok) {
-    throw new Error(`MethLab API error: ${res.status} ${res.statusText}`);
+      if (!res.ok) {
+        throw new Error(`MethLab API error: ${res.status} ${res.statusText}`);
+      }
+
+      return res.json() as Promise<T>;
+    } catch (err) {
+      lastError = err instanceof Error ? err : new Error(String(err));
+      if (attempt < retries) {
+        await new Promise((r) => setTimeout(r, 500 * (attempt + 1)));
+      }
+    }
   }
 
-  return res.json() as Promise<T>;
+  throw lastError!;
 }
 
 export async function getFacilities(
