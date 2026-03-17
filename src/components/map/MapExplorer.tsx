@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, useMemo, Suspense } from "react";
 import { Canvas } from "@react-three/fiber";
 import GlobeView from "@/components/three/GlobeView";
 import type { PlumeAnnotated } from "@/lib/api/types";
@@ -9,11 +9,37 @@ import { formatEmissionRate, formatCoordinate } from "@/lib/utils/formatting";
 import { GAS_COLORS } from "@/lib/plume/plume-color";
 import Link from "next/link";
 
-interface MapExplorerProps {
-  plumes: PlumeAnnotated[];
+/** Convert lat/lon to a Three.js camera position on the globe. */
+function bboxToCameraPosition(
+  bbox: [number, number, number, number]
+): [number, number, number] {
+  const [west, south, east, north] = bbox;
+  const centerLat = (south + north) / 2;
+  const centerLon = (west + east) / 2;
+  const latSpan = north - south;
+  const lonSpan = east - west;
+  const span = Math.max(latSpan, lonSpan);
+
+  // Distance from globe centre — closer for smaller bounds
+  const EARTH_RADIUS = 100;
+  const distance = EARTH_RADIUS + 40 + span * 2;
+
+  const phi = (90 - centerLat) * (Math.PI / 180);
+  const theta = (centerLon + 180) * (Math.PI / 180);
+  return [
+    -distance * Math.sin(phi) * Math.cos(theta),
+    distance * Math.cos(phi),
+    distance * Math.sin(phi) * Math.sin(theta),
+  ];
 }
 
-export default function MapExplorer({ plumes }: MapExplorerProps) {
+interface MapExplorerProps {
+  plumes: PlumeAnnotated[];
+  /** [west, south, east, north] from DEKS project bounds, if available */
+  initialBbox?: [number, number, number, number] | null;
+}
+
+export default function MapExplorer({ plumes, initialBbox }: MapExplorerProps) {
   const [gasFilter, setGasFilter] = useState<"all" | "CH4" | "CO2">("all");
 
   const filtered =
@@ -21,13 +47,18 @@ export default function MapExplorer({ plumes }: MapExplorerProps) {
       ? plumes
       : plumes.filter((p) => p.gas === gasFilter);
 
+  const cameraPosition = useMemo<[number, number, number]>(
+    () => (initialBbox ? bboxToCameraPosition(initialBbox) : [0, 80, 220]),
+    [initialBbox]
+  );
+
   return (
     <div className="relative h-full">
       {/* 3D Globe */}
       <Canvas
         className="h-full w-full"
         camera={{
-          position: [0, 80, 220],
+          position: cameraPosition,
           near: 1,
           far: 2000,
           fov: 45,
@@ -35,7 +66,7 @@ export default function MapExplorer({ plumes }: MapExplorerProps) {
         frameloop="always"
       >
         <Suspense fallback={null}>
-          <GlobeView plumes={filtered} autoRotate={false} />
+          <GlobeView plumes={filtered} autoRotate={!initialBbox} />
         </Suspense>
       </Canvas>
 

@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import { getTopEmitters } from "@/lib/api/carbon-mapper";
+import { getTopEmitters, getPlumesByBbox } from "@/lib/api/carbon-mapper";
+import { getDeksProjectContext, geojsonToBbox } from "@/lib/api/deks-context";
 import MapExplorer from "@/components/map/MapExplorer";
 
 export const metadata: Metadata = {
@@ -10,7 +11,14 @@ export const metadata: Metadata = {
 };
 
 export default async function MapPage() {
-  const plumes = await getTopEmitters(200);
+  const ctx = await getDeksProjectContext();
+  const bbox = ctx?.bounds ? geojsonToBbox(ctx.bounds) : null;
+
+  // When running inside DEKS with project bounds, fetch plumes within those bounds.
+  // Otherwise fall back to top emitters globally.
+  const plumes = bbox
+    ? await getPlumesByBbox(bbox, 200)
+    : await getTopEmitters(200);
 
   return (
     <div className="h-[calc(100vh-3.5rem)]">
@@ -21,7 +29,7 @@ export default async function MapPage() {
           </div>
         }
       >
-        <MapExplorer plumes={plumes} />
+        <MapExplorer plumes={plumes} initialBbox={bbox} />
       </Suspense>
     </div>
   );
