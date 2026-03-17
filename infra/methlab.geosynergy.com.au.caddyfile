@@ -1,0 +1,52 @@
+# MethLab - Caddy Configuration
+#
+# Add to /etc/caddy/Caddyfile with:
+#   import /home/ubuntu/projects/methlab/infra/methlab.geosynergy.com.au.caddyfile
+#
+# After adding, restart Caddy:
+#   sudo systemctl restart caddy
+#
+# DNS: Create A record for methlab.geosynergy.com.au → server IP
+
+methlab.geosynergy.com.au {
+    # Automatic HTTPS via Let's Encrypt
+
+    reverse_proxy localhost:3100 {
+        header_up Host {host}
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-For {remote_host}
+        header_up X-Forwarded-Proto {scheme}
+
+        # Next.js can be slow on first request (ISR)
+        transport http {
+            read_timeout 60s
+            write_timeout 60s
+        }
+
+        # Retry during deploys
+        lb_try_duration 30s
+        lb_try_interval 1s
+    }
+
+    # Security headers
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "SAMEORIGIN"
+        X-XSS-Protection "1; mode=block"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        -Server
+    }
+
+    # Logging
+    log {
+        output file /var/log/caddy/methlab.log {
+            roll_size 100mb
+            roll_keep 3
+            roll_keep_for 720h
+        }
+        format json
+    }
+
+    encode gzip zstd
+}

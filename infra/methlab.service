@@ -1,0 +1,20 @@
+[Unit]
+Description=MethLab - Methane Plume Visualiser (Next.js)
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/home/ubuntu/projects/methlab
+Environment="NODE_ENV=production"
+Environment="PORT=3100"
+EnvironmentFile=-/home/ubuntu/projects/methlab/.env
+ExecStart=/usr/bin/node /home/ubuntu/projects/methlab/node_modules/.bin/next start -p 3100
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
