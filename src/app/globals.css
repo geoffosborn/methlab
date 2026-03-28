@@ -31,3 +31,136 @@ html {
 ::-webkit-scrollbar-thumb:hover {
   background: #555;
 }
+
+/* ── NGER Report Print Styles ── */
+@media print {
+  /* Hide app chrome */
+  header,
+  footer,
+  nav {
+    display: none !important;
+  }
+
+  /* Reset to light theme */
+  html,
+  body {
+    background: white !important;
+    color: #111 !important;
+    font-size: 10pt;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Report container */
+  .nger-report {
+    max-width: 100% !important;
+    padding: 0 !important;
+    color: #111;
+  }
+
+  /* Tables */
+  .nger-report table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 9pt;
+  }
+
+  .nger-report th,
+  .print-th {
+    background: #e5e7eb !important;
+    color: #111 !important;
+    font-weight: 600;
+    border: 1px solid #999 !important;
+    padding: 4px 8px;
+  }
+
+  .nger-report td,
+  .print-td {
+    border: 1px solid #bbb !important;
+    padding: 4px 8px;
+    color: #222 !important;
+  }
+
+  .nger-report tr:nth-child(even) td {
+    background: #f9fafb !important;
+  }
+
+  /* Section breaks */
+  .report-section {
+    page-break-inside: avoid;
+    margin-bottom: 16pt;
+  }
+
+  /* Override dark backgrounds */
+  .nger-report [class*="bg-zinc"],
+  .print-card {
+    background: white !important;
+    border: 1px solid #d1d5db !important;
+  }
+
+  .nger-report [class*="text-zinc"],
+  .print-muted {
+    color: #555 !important;
+  }
+
+  /* Print header */
+  .print-header {
+    color: #111 !important;
+  }
+
+  .print-header h1 {
+    color: #111 !important;
+  }
+
+  /* Status badges */
+  .print-status-green {
+    background: #d1fae5 !important;
+    color: #065f46 !important;
+  }
+
+  .print-status-red {
+    background: #fee2e2 !important;
+    color: #991b1b !important;
+  }
+
+  .print-status-amber {
+    background: #fef3c7 !important;
+    color: #92400e !important;
+  }
+
+  .print-status-grey {
+    background: #f3f4f6 !important;
+    color: #374151 !important;
+  }
+
+  /* Alert boxes */
+  .print-alert-red {
+    background: #fef2f2 !important;
+    border-color: #fecaca !important;
+  }
+
+  .print-alert-red p {
+    color: #991b1b !important;
+  }
+
+  /* Highlight card */
+  .nger-report [class*="bg-orange"] {
+    background: #fff7ed !important;
+    border-color: #fed7aa !important;
+  }
+
+  .nger-report [class*="text-orange"] {
+    color: #c2410c !important;
+  }
+
+  /* Metric values */
+  .nger-report .tabular-nums {
+    color: #111 !important;
+  }
+
+  /* Page setup */
+  @page {
+    size: A4;
+    margin: 15mm 20mm;
+  }
+}

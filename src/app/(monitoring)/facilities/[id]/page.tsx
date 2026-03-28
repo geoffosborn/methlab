@@ -125,6 +125,20 @@ export default async function FacilityPage({ params }: FacilityPageProps) {
               High-resolution SWIR plume detection & quantification (Varon IME)
             </p>
           </Link>
+          {facility.nger_id && (
+            <Link
+              href={`/facilities/${facility.id}/nger-report`}
+              className="bg-zinc-900/50 border border-zinc-800 rounded-lg p-5 hover:border-zinc-700 transition-colors group"
+            >
+              <h3 className="font-semibold group-hover:text-orange-400 transition-colors">
+                NGER Method 2 Report
+              </h3>
+              <p className="text-zinc-500 text-sm mt-1">
+                CER-formatted fugitive emissions report with satellite
+                verification
+              </p>
+            </Link>
+          )}
         </div>
       </div>
     </div>
