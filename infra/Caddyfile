@@ -5,16 +5,15 @@ methlab.geosynergy.com.au {
 	reverse_proxy localhost:3100
 }
 
-methlab-api.geosynergy.com.au {
-	# API service
-	reverse_proxy /health localhost:8020
-	reverse_proxy /facilities* localhost:8020
-	reverse_proxy /tropomi* localhost:8020
-	reverse_proxy /sentinel2* localhost:8020
-	reverse_proxy /alerts* localhost:8020
-	reverse_proxy /auth* localhost:8020
-	reverse_proxy /reports* localhost:8020
-
-	# ML inference (internal only — uncomment if needed externally)
-	# reverse_proxy /predict* localhost:8023
-}
+# API is accessed internally via localhost:8020 (Next.js API routes proxy to it).
+# Uncomment below when methlab-api.geosynergy.com.au DNS is configured:
+#
+# methlab-api.geosynergy.com.au {
+# 	reverse_proxy /health localhost:8020
+# 	reverse_proxy /facilities* localhost:8020
+# 	reverse_proxy /tropomi* localhost:8020
+# 	reverse_proxy /sentinel2* localhost:8020
+# 	reverse_proxy /alerts* localhost:8020
+# 	reverse_proxy /auth* localhost:8020
+# 	reverse_proxy /reports* localhost:8020
+# }
