@@ -24,12 +24,12 @@ export default function SceneCanvas({
     <div className={className ?? "h-full w-full"}>
       <Canvas
         gl={gl ?? {
-          depth: false,
+          depth: true,
           logarithmicDepthBuffer: false,
-          antialias: false,
+          antialias: true,
         }}
         camera={camera ?? {
-          position: [500, 300, 500],
+          position: [2000, 800, 2000],
           near: 1,
           far: 4e5,
           fov: 50,

@@ -3,10 +3,6 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   transpilePackages: [
     "three",
-    "@takram/three-atmosphere",
-    "@takram/three-clouds",
-    "@takram/three-geospatial",
-    "@takram/three-geospatial-effects",
   ],
   turbopack: {
     rules: {
