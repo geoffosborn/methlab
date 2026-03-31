@@ -1,0 +1,8 @@
+*.pyc
+__pycache__/
+.env
+*.pid
+uvicorn-*.log
+.venv/
+*.egg-info/
+

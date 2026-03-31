@@ -1,0 +1,28 @@
+# MethLab Prefect deployment configuration
+
+deployments:
+  - name: tropomi-monthly
+    entrypoint: flows/tropomi_screening.py:tropomi_monthly_screening
+    schedule:
+      cron: "0 6 5 * *"  # 5th of each month at 06:00 UTC
+      timezone: "Australia/Brisbane"
+    work_pool:
+      name: methlab-pool
+    parameters: {}
+
+  - name: s2-weekly-scan
+    entrypoint: flows/s2_detection.py:s2_weekly_scan
+    schedule:
+      cron: "0 8 * * 1"  # Every Monday at 08:00 UTC
+      timezone: "Australia/Brisbane"
+    work_pool:
+      name: methlab-pool
+    parameters:
+      intensity_threshold: 40.0
+      max_facilities: 20
+
+  - name: s2-facility-ondemand
+    entrypoint: flows/s2_detection.py:s2_facility_detection
+    work_pool:
+      name: methlab-pool
+    # No schedule — triggered via API or manually

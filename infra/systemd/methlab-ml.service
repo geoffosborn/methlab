@@ -1,0 +1,19 @@
+[Unit]
+Description=MethLab ML Inference Service - GPU
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/home/ubuntu/projects/methlab/backend/apps/ml
+Environment="PATH=/home/ubuntu/projects/methlab/backend/.venv/bin:/usr/local/bin:/usr/bin:/bin"
+EnvironmentFile=/home/ubuntu/projects/methlab/backend/.env
+ExecStart=/home/ubuntu/projects/methlab/backend/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8023
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

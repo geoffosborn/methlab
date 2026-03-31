@@ -1,0 +1,70 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    environment:
+      POSTGRES_DB: methlab
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-geosynergy12!}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d methlab"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  migrate:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.migrate
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: methlab
+      DB_USER: postgres
+      DB_PASSWORD: ${DB_PASSWORD:-geosynergy12!}
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.api
+    ports:
+      - "8020:8020"
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: methlab
+      DB_USER: postgres
+      DB_PASSWORD: ${DB_PASSWORD:-geosynergy12!}
+      AWS_REGION: ap-southeast-2
+      S3_BUCKET: methlab-data-apse2
+      CORS_ORIGINS: '["http://localhost:3000","http://localhost:3100"]'
+    volumes:
+      - ./backend/apps/api:/app
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8020 --reload
+
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "3100:3100"
+    depends_on:
+      - api
+    environment:
+      METHLAB_API_BASE: http://api:8020
+      PORT: 3100
+
+volumes:
+  pgdata:

@@ -1,0 +1,10 @@
+FROM python:3.11-slim
+
+RUN pip install psycopg[binary] python-dotenv
+
+WORKDIR /app
+COPY scripts/run_migrations.py scripts/
+COPY migrations/ migrations/
+COPY apps/registry/seed_coal_mines.py apps/registry/
+
+CMD python scripts/run_migrations.py && python apps/registry/seed_coal_mines.py

@@ -1,0 +1,157 @@
+"""Update MethLab marketing plan 9-box cells via assistant API."""
+import requests
+
+PLAN_ID = 7
+BASE = "http://localhost:8030/api/marketing/plans"
+
+cells = {
+    "target_market": (
+        "Primary: Australian coal mine operators under the Safeguard Mechanism "
+        "(~50-70 facilities, >100,000 tCO2e/year threshold). Initially target "
+        "top 20 emitters with highest Safeguard credit exposure.\n\n"
+        "Secondary: Environmental consultancies servicing NGER compliance "
+        "(Anthesis, Earth Systems, Arche Energy, ERM, SLR Consulting). They need "
+        "satellite data inputs, not another consulting competitor.\n\n"
+        "Tertiary: Clean Energy Regulator / DCCEEW (audit verification), financial "
+        "institutions and insurers (ESG due diligence on coal assets), carbon market "
+        "participants (SMC integrity assessment).\n\n"
+        "Key decision-makers: Environment/sustainability managers at mine sites, "
+        "chief operating officers, NGER reporting officers. At consultancies: "
+        "practice leads for climate/energy reporting."
+    ),
+    "message": (
+        "Core message: \"Your Method 2 numbers say 0.002 tCO2e/t. Satellite says "
+        "0.06. The CER will have satellite data soon - would you rather know first?\"\n\n"
+        "Pain points:\n"
+        "- NGER Method 1 being phased out (Jul 2025/2026) forcing transition to Method 2/3\n"
+        "- Method 2 is deeply flawed (nitrogen contamination, insufficient sampling, self-assessed)\n"
+        "- Satellite studies consistently show 3-8x underreporting vs operator figures\n"
+        "- Expert Panel (chaired by former Chief Scientist Dr Cathy Foley) building framework "
+        "for satellite integration into NGER\n"
+        "- Safeguard baselines declining 4.9%/yr - real emissions exposure growing annually\n"
+        "- Adani earned $12.3M in Safeguard credits without actual abatement\n\n"
+        "Value proposition: Insurance - know your real emissions exposure before the regulator "
+        "does. A 5Mt/yr mine faces ~$700K+/yr in ACCU purchases if CER audits using satellite "
+        "data. MethLab monitoring costs $75K/yr.\n\n"
+        "For consultancies: \"Your clients are switching from Method 1 to Method 2. Here is "
+        "independent satellite data to validate their numbers before the CER does.\""
+    ),
+    "media": (
+        "Phase 1 - Credibility (Now to Q3 2026):\n"
+        "- Publish verification reports for 5-10 high-profile mines using public satellite data\n"
+        "- Whitepaper showing satellite vs reported discrepancies (follow Ember/IEEFA lead)\n"
+        "- Submit to Expert Panel public consultation processes\n"
+        "- Present at APPEA Environmental Forum, Carbon/ESG conferences\n\n"
+        "Phase 2 - Channel development:\n"
+        "- Approach Ember Climate for data partnership (their CC BY 4.0 mine database + our monitoring)\n"
+        "- Engage Expert Panel members institutions (UNSW - A/Prof Bryce Kelly; FEnEx CRC - Prof Eric May)\n"
+        "- Target environmental consulting firms as channel partners\n\n"
+        "Industry events: APPEA Conference, QLD Mining & Engineering Exhibition, "
+        "International Conference on Greenhouse Gas Technologies\n\n"
+        "Digital: LinkedIn thought leadership on NGER reform + satellite verification, industry newsletter"
+    ),
+    "lead_capture": (
+        "Free tier:\n"
+        "- Public emissions screening using Copernicus satellite data (TROPOMI) for any AU coal mine\n"
+        "- Interactive 3D plume visualisation demonstrating satellite detection capability\n"
+        "- Free summary report showing satellite-observed vs NGER-reported emissions for prospect mines\n\n"
+        "Gated content:\n"
+        "- Detailed facility-level verification report (requires contact details)\n"
+        "- NGER compliance readiness assessment\n"
+        "- Whitepaper: \"Satellite Verification of Coal Mine Methane: What the Expert Panel Means "
+        "for Your Reporting\"\n\n"
+        "Conference demos:\n"
+        "- Live satellite monitoring dashboard showing real AU mine emissions\n"
+        "- Side-by-side comparison: NGER reported vs satellite observed for known high-emitters"
+    ),
+    "lead_nurture": (
+        "For mine operators:\n"
+        "- Monthly methane monitoring digest (satellite observations for their region)\n"
+        "- Quarterly regulatory update on Expert Panel progress and NGER reform timeline\n"
+        "- Case studies: anonymised detection results showing value of early awareness\n"
+        "- Alerts when new satellite data shows significant emissions events at their facilities\n\n"
+        "For consultancies:\n"
+        "- API documentation and integration guides\n"
+        "- White-label report templates for NGER audit submissions\n"
+        "- Training webinars on interpreting satellite methane data\n"
+        "- Portfolio-level monitoring demo for multi-client firms\n\n"
+        "Regulatory intelligence:\n"
+        "- Expert Panel recommendation tracking\n"
+        "- Method 2 review outcomes and compliance implications\n"
+        "- Safeguard Mechanism credit market analysis"
+    ),
+    "sales_conversion": (
+        "Opportunity 1 - Compliance Monitoring SaaS ($50-100K/facility/year):\n"
+        "- Per-facility monitoring dashboard (TROPOMI screening + S2 plume detection)\n"
+        "- Monthly/quarterly reports comparing satellite-derived vs NGER-reported emissions\n"
+        "- NGER baseline breach alerts (early warning before CER audits)\n"
+        "- Trend analysis: emissions tracking against Safeguard decline trajectory (4.9%/yr)\n"
+        "- Target: 20 facilities = $1-2M ARR\n\n"
+        "Opportunity 2 - Verification-as-a-Service ($20-40K/year per seat):\n"
+        "- API access to facility-level satellite emissions estimates\n"
+        "- White-label reports for consulting firms in NGER audit submissions\n"
+        "- Bulk portfolio monitoring for firms managing 10+ mine clients\n"
+        "- Historical baseline analysis (satellite record vs reported NGER history)\n\n"
+        "Opportunity 3 - Expert Panel alignment (strategic, not direct revenue):\n"
+        "- Methodology documentation aligned with published literature\n"
+        "- Position as implementation of panel recommendations\n"
+        "- Government procurement positioning for when satellite verification mandated (~2027-2028)\n\n"
+        "Pilot structure: 3-month monitoring trial at reduced rate, full dashboard access, "
+        "comparison report at conclusion"
+    ),
+    "wow_experience": (
+        "3D volumetric plume visualisation - immersive ray-marched methane plumes rendered "
+        "from real satellite data, not seen in any competing product\n\n"
+        "Dual-sensor monitoring - TROPOMI for broad-area screening (weekly revisit) + "
+        "Sentinel-2 for high-resolution plume detection (20m SWIR). Most competitors use one or the other.\n\n"
+        "Published peer-reviewed methods - Varon IME for Sentinel-2 quantification, "
+        "wind-rotated enhancement analysis for TROPOMI. Transparent methodology, no proprietary black box.\n\n"
+        "NGER-native reporting - reports and dashboards designed around Australian regulatory "
+        "requirements, not retrofitted from global oil & gas platforms\n\n"
+        "5-10x cheaper than GHGSat - free Copernicus satellite data means low marginal cost "
+        "per facility. GHGSat charges $200K+ with no NGER integration.\n\n"
+        "Real-time alerts - NGER baseline breach warnings, new detection notifications, "
+        "trend analysis. Know before the CER knows."
+    ),
+    "increase_clv": (
+        "Expansion paths per customer:\n"
+        "1. Additional facilities - start with highest-risk mine, expand to full portfolio\n"
+        "2. Oil & gas facilities under Safeguard Mechanism (same platform, different sector)\n"
+        "3. Historical baseline analysis - reconstruct satellite emissions record for prior "
+        "NGER reporting periods\n"
+        "4. Ground sensor integration - combine satellite top-down with ground-based bottom-up "
+        "for complete MRV\n"
+        "5. ACCU/SMC advisory - use satellite data to assess carbon credit integrity and "
+        "Safeguard exposure\n"
+        "6. Airborne verification campaigns - periodic high-accuracy calibration flights to "
+        "complement continuous satellite monitoring\n\n"
+        "For consultancy channel:\n"
+        "- Upgrade from single-seat to enterprise API access\n"
+        "- Custom white-label branding\n"
+        "- Training and certification program for their staff\n"
+        "- Co-branded conference presentations and publications"
+    ),
+    "referrals": (
+        "Credibility drivers:\n"
+        "- Published satellite verification results (with client permission) showing emissions "
+        "reduction or accurate reporting\n"
+        "- Expert Panel alignment - referenced or consulted in government methodology development\n"
+        "- Academic partnerships (UNSW, FEnEx CRC) lending scientific credibility\n"
+        "- Ember Climate data partnership - association with established CMM research organisation\n\n"
+        "Regulatory endorsement pathway:\n"
+        "- CER adoption of satellite verification creates automatic referral to all Safeguard facilities\n"
+        "- State EPA references (NSW EPA already flagging concerns about gas modelling accuracy)\n"
+        "- DCCEEW policy alignment as Expert Panel recommendations are implemented\n\n"
+        "Industry network effects:\n"
+        "- Consultancy channel partners refer their mine operator clients\n"
+        "- Mine operators in same basin recommend to neighbouring operators (shared airshed monitoring)\n"
+        "- Carbon market participants require satellite-verified emissions from their portfolio companies"
+    ),
+}
+
+for key, content in cells.items():
+    r = requests.put(f"{BASE}/{PLAN_ID}/cells/{key}", json={"content": content})
+    status = "OK" if r.status_code == 200 else f"FAIL ({r.status_code})"
+    print(f"  {key}: {status}")
+
+print("\nDone.")

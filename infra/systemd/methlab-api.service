@@ -1,0 +1,19 @@
+[Unit]
+Description=MethLab API Service - Methane Monitoring
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/home/ubuntu/projects/methlab/backend/apps/api
+Environment="PATH=/home/ubuntu/projects/methlab/backend/.venv/bin:/usr/local/bin:/usr/bin:/bin"
+EnvironmentFile=/home/ubuntu/projects/methlab/backend/.env
+ExecStart=/home/ubuntu/projects/methlab/backend/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8020
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

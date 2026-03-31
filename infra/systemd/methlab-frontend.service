@@ -1,0 +1,16 @@
+[Unit]
+Description=MethLab Next.js Frontend
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/projects/methlab/frontend
+ExecStart=/usr/bin/node node_modules/.bin/next start -p 3100
+Restart=on-failure
+RestartSec=5
+Environment=NODE_ENV=production
+Environment=PORT=3100
+
+[Install]
+WantedBy=multi-user.target
