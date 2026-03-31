@@ -24,11 +24,21 @@ Usage:
     python scripts/validate_known_emitters.py --site moranbah  # Single site
 """
 
+import os
+os.environ["PROJ_DATA"] = ""
+os.environ["PROJ_LIB"] = ""
+
+import sys
+sys.path.insert(0, "apps")
+sys.path.insert(0, "packages/common")
+
 import argparse
 import logging
-import sys
 from dataclasses import dataclass
 from datetime import date
+
+from dotenv import load_dotenv
+load_dotenv()
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 logger = logging.getLogger(__name__)
