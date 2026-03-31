@@ -2,7 +2,8 @@
 
 import { useState, useMemo, useEffect } from "react";
 import SceneCanvas from "@/components/three/SceneCanvas";
-import LeakScene, { type CameraPreset } from "@/components/three/LeakScene";
+import LeakScene from "@/components/three/LeakScene";
+import type { CameraPreset } from "@/components/three/LeakScene";
 import type { TileSource } from "@/components/three/MapTiles";
 import type { PlumeAnnotated } from "@/lib/api/types";
 import { fetchPlumeTimeSeries, type PlumeKeyframe } from "@/lib/api/plume-timeseries";
