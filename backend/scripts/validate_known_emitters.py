@@ -37,6 +37,8 @@ import logging
 from dataclasses import dataclass
 from datetime import date
 
+import psycopg
+
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -126,8 +128,19 @@ def validate_tropomi(
     logger.info("  Expected intensity: %.0f - %.0f", *site.expected_intensity_score)
     logger.info("  Notes: %s", site.notes)
 
+    # Look up real facility ID from database
+    from tropomi.config import get_settings
+    settings = get_settings()
+    facility_id = 0
+    with psycopg.connect(settings.database_url) as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT id FROM facilities WHERE name = %s LIMIT 1", [site.facility_name])
+            row = cur.fetchone()
+            if row:
+                facility_id = row[0]
+
     result = run_facility_analysis(
-        facility_id=0,  # Dummy ID for validation
+        facility_id=facility_id,
         lat=site.lat,
         lon=site.lon,
         facility_name=site.facility_name,
