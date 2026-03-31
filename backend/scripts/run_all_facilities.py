@@ -87,7 +87,7 @@ def get_facilities(facility_id: int | None = None) -> list[dict]:
                            ST_Y(centroid::geometry) as latitude,
                            ST_X(centroid::geometry) as longitude
                     FROM facilities
-                    WHERE status = 'active' AND safeguard_covered = true
+                    WHERE status = 'active'
                     ORDER BY name
                 """)
             return cur.fetchall()
