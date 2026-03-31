@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+export PATH="$HOME/.local/bin:$PATH"
+
 PROJECT=/home/ubuntu/projects/methlab
 
 echo "==> Pulling latest changes"
@@ -14,7 +16,9 @@ npm run build
 
 echo "==> Syncing backend dependencies"
 cd "$PROJECT/backend"
-uv sync
+uv pip install -e apps/api -e packages/common
+# Pipeline deps (not editable — flat module layout)
+uv pip install -r apps/tropomi/pyproject.toml -r apps/sentinel2/pyproject.toml 2>/dev/null || true
 
 echo "==> Restarting services"
 sudo systemctl restart methlab-frontend
